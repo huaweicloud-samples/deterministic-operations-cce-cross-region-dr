@@ -1,0 +1,27 @@
+# Huawei Cloud SFS StorageClass
+# 使用华为云 SFS CSI Driver
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: huawei-sfs
+provisioner: driver.sfs.huaweicloud.com
+parameters:
+  backendType: "sfs"
+  # 在部署时替换为实际的 SFS 文件系统 ID
+  # fileSystemId: <your-sfs-filesystem-id>
+  # volumeHandle: <your-sfs-filesystem-id>
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+---
+# PersistentVolumeClaim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sfs-app-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: huawei-sfs
+  resources:
+    requests:
+      storage: 1Gi

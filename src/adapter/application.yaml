@@ -1,0 +1,46 @@
+# Application Deployment for Huawei Cloud
+# 使用华为云 SFS 作为持久化存储
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: sfs-app
+  name: sfs-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sfs-app
+  template:
+    metadata:
+      labels:
+        app: sfs-app
+    spec:
+      containers:
+      - name: web-container
+        image: registry.cn-north-4.myhuaweicloud.com/library/httpd:latest
+        volumeMounts:
+          - name: persistent-storage
+            mountPath: /usr/local/apache2/htdocs/
+      volumes:
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: sfs-app-claim
+---
+# Service - 使用华为云 ELB
+apiVersion: v1
+kind: Service
+metadata:
+  name: sfs-app-service
+  annotations:
+    # 指定使用 ELB 类型
+    service.kubernetes.io/backend-protocol: HTTP
+    service.kubernetes.io/elb.type: application
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
+  selector:
+    app: sfs-app
